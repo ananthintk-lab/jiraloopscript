@@ -104,3 +104,18 @@ after each iteration and it's included in prompts for context.
   - `EmployeeNotFoundException` was already defined in US-002; just needed to add an `@ExceptionHandler` in `GlobalExceptionHandler` and use it in the service
   - `mvn test` ran 29 tests (11 controller + 1 app context + 11 repo + 6 service) — all passing
 ---
+
+## 2026-06-29 - US-007
+- What was implemented: DELETE /employees/{id} endpoint returning 204 No Content on success and 404 when employee not found
+- Files changed:
+  - `src/main/java/com/jira/jiraloopscript/service/EmployeeService.java` (added `deleteEmployee(Long id)` — checks existence via `findById`, throws `EmployeeNotFoundException` if absent, then calls `deleteById`)
+  - `src/main/java/com/jira/jiraloopscript/controller/EmployeeController.java` (added `DELETE /employees/{id}` → 204 No Content, imported `@DeleteMapping`)
+  - `src/test/java/com/jira/jiraloopscript/service/EmployeeServiceTest.java` (2 new tests: success calls deleteById, not found throws exception)
+  - `src/test/java/com/jira/jiraloopscript/controller/EmployeeControllerTest.java` (2 new tests: 204 on success, 404 with error body when not found)
+- **Learnings:**
+  - `deleteById` in `InMemoryEmployeeRepository` was already implemented (US-002 stub) — service just needed existence check before calling it
+  - `GlobalExceptionHandler` already had `EmployeeNotFoundException` → 404 handler (US-005), so no new exception handling was needed
+  - For void service methods, use `doNothing().when(service).method(id)` and `doThrow(...).when(service).method(id)` in MockMvc tests (not `when(...).thenReturn/thenThrow`)
+  - PowerShell's `$?` is set to `$false` when a native command writes to stderr — Mockito's JVM warnings on Java 21 cause this even when build is 100% successful; use `Select-String "BUILD"` to see true outcome
+  - `mvn clean install` ran 40 tests (17 controller + 1 app context + 11 repo + 11 service) — all passing
+---

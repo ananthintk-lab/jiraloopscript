@@ -125,6 +125,27 @@ class EmployeeServiceTest {
     }
 
     @Test
+    void deleteEmployee_success_callsRepositoryDeleteById() {
+        Employee employee = new Employee(1L, "Jane", "Doe", "jane@example.com");
+        when(repository.findById(1L)).thenReturn(Optional.of(employee));
+
+        service.deleteEmployee(1L);
+
+        verify(repository).deleteById(1L);
+    }
+
+    @Test
+    void deleteEmployee_notFound_throwsEmployeeNotFoundException() {
+        when(repository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.deleteEmployee(99L))
+                .isInstanceOf(EmployeeNotFoundException.class)
+                .hasMessageContaining("99");
+
+        verify(repository, never()).deleteById(any());
+    }
+
+    @Test
     void createEmployee_success_savesAndReturnsEmployee() {
         when(repository.existsByEmail("jane@example.com")).thenReturn(false);
         when(repository.save(any())).thenAnswer(inv -> {

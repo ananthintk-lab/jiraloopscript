@@ -6,6 +6,7 @@ import com.jira.jiraloopscript.service.EmployeeService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -62,6 +63,18 @@ public class EmployeeController {
                                                    @Valid @RequestBody CreateEmployeeRequest request) {
         Employee updated = employeeService.updateEmployee(id, request);
         return ResponseEntity.ok(updated);
+    }
+
+    /**
+     * Deletes an employee by id.
+     *
+     * @param id the employee's identifier
+     * @return 204 No Content on success, 404 if not found
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {
+        employeeService.deleteEmployee(id);
+        return ResponseEntity.noContent().build();
     }
 
     /**

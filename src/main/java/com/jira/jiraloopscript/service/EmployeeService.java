@@ -57,6 +57,18 @@ public class EmployeeService {
     }
 
     /**
+     * Deletes an employee by id.
+     *
+     * @throws EmployeeNotFoundException if no employee exists with the given id
+     */
+    public void deleteEmployee(Long id) {
+        if (repository.findById(id).isEmpty()) {
+            throw new EmployeeNotFoundException(id);
+        }
+        repository.deleteById(id);
+    }
+
+    /**
      * Creates a new employee, enforcing unique email constraint.
      *
      * @throws EmailAlreadyExistsException if the email is already in use
