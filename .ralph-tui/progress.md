@@ -119,3 +119,16 @@ after each iteration and it's included in prompts for context.
   - PowerShell's `$?` is set to `$false` when a native command writes to stderr — Mockito's JVM warnings on Java 21 cause this even when build is 100% successful; use `Select-String "BUILD"` to see true outcome
   - `mvn clean install` ran 40 tests (17 controller + 1 app context + 11 repo + 11 service) — all passing
 ---
+
+## 2026-06-29 - US-008
+- What was implemented: Completed Global Exception Handling — added `path` field to `ErrorResponse`, updated `GlobalExceptionHandler` to inject `HttpServletRequest` and populate path on all handlers, changed validation error `message` to join all field errors (instead of "Validation failed"), added `path`/`message`/`error` assertions to controller tests
+- Files changed:
+  - `src/main/java/com/jira/jiraloopscript/dto/ErrorResponse.java` (replaced `List<String> errors` with `String path`)
+  - `src/main/java/com/jira/jiraloopscript/exception/GlobalExceptionHandler.java` (added `HttpServletRequest` param to all 4 handlers, populate path, join field errors into message)
+  - `src/test/java/com/jira/jiraloopscript/controller/EmployeeControllerTest.java` (added `$.path`, `$.error`, `$.message` assertions to all exception-handling tests)
+- **Learnings:**
+  - `HttpServletRequest` can be added as a parameter to any `@ExceptionHandler` method — Spring injects it automatically; use `request.getRequestURI()` for the `path` field
+  - For `MethodArgumentNotValidException`, join field errors with `Collectors.joining("; ")` to list them all in the `message` field instead of a separate list
+  - `org.hamcrest.Matchers.containsString(...)` works directly in `jsonPath(...).value(...)` assertions for partial string matching
+  - `mvn clean install` ran 40 tests (17 controller + 1 app context + 11 repo + 11 service) — all passing
+---

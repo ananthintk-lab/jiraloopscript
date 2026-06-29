@@ -94,14 +94,18 @@ class EmployeeControllerTest {
         mockMvc.perform(get("/employees/99"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.message").value("Employee not found with id: 99"));
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").value("Employee not found with id: 99"))
+                .andExpect(jsonPath("$.path").value("/employees/99"));
     }
 
     @Test
     void getEmployeeById_invalidIdType_returns400() throws Exception {
         mockMvc.perform(get("/employees/abc"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400));
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.path").value("/employees/abc"));
     }
 
     @Test
@@ -122,7 +126,7 @@ class EmployeeControllerTest {
     }
 
     @Test
-    void createEmployee_blankFirstName_returns400() throws Exception {
+    void createEmployee_blankFirstName_returns400WithFieldErrorInMessage() throws Exception {
         CreateEmployeeRequest request = validRequest();
         request.setFirstName("");
 
@@ -130,7 +134,10 @@ class EmployeeControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400));
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("firstName")))
+                .andExpect(jsonPath("$.path").value("/employees"));
     }
 
     @Test
@@ -142,7 +149,9 @@ class EmployeeControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400));
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("lastName")))
+                .andExpect(jsonPath("$.path").value("/employees"));
     }
 
     @Test
@@ -154,7 +163,9 @@ class EmployeeControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400));
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("email")))
+                .andExpect(jsonPath("$.path").value("/employees"));
     }
 
     @Test
@@ -167,7 +178,9 @@ class EmployeeControllerTest {
                         .content(objectMapper.writeValueAsString(validRequest())))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.status").value(409))
-                .andExpect(jsonPath("$.message").value("Email already exists: jane@example.com"));
+                .andExpect(jsonPath("$.error").value("Conflict"))
+                .andExpect(jsonPath("$.message").value("Email already exists: jane@example.com"))
+                .andExpect(jsonPath("$.path").value("/employees"));
     }
 
     @Test
@@ -198,7 +211,8 @@ class EmployeeControllerTest {
                         .content(objectMapper.writeValueAsString(validRequest())))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.message").value("Employee not found with id: 99"));
+                .andExpect(jsonPath("$.message").value("Employee not found with id: 99"))
+                .andExpect(jsonPath("$.path").value("/employees/99"));
     }
 
     @Test
@@ -210,7 +224,9 @@ class EmployeeControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400));
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("firstName")))
+                .andExpect(jsonPath("$.path").value("/employees/1"));
     }
 
     @Test
@@ -226,7 +242,8 @@ class EmployeeControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.status").value(409))
-                .andExpect(jsonPath("$.message").value("Email already exists: other@example.com"));
+                .andExpect(jsonPath("$.message").value("Email already exists: other@example.com"))
+                .andExpect(jsonPath("$.path").value("/employees/1"));
     }
 
     @Test
@@ -244,7 +261,8 @@ class EmployeeControllerTest {
         mockMvc.perform(delete("/employees/99"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.message").value("Employee not found with id: 99"));
+                .andExpect(jsonPath("$.message").value("Employee not found with id: 99"))
+                .andExpect(jsonPath("$.path").value("/employees/99"));
     }
 
     private CreateEmployeeRequest validRequest() {
