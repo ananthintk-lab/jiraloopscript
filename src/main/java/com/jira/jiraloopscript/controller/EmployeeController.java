@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -47,6 +48,20 @@ public class EmployeeController {
     @GetMapping("/{id}")
     public ResponseEntity<Employee> getEmployeeById(@PathVariable Long id) {
         return ResponseEntity.ok(employeeService.getEmployeeById(id));
+    }
+
+    /**
+     * Updates an existing employee by id.
+     *
+     * @param id      the employee's identifier
+     * @param request validated employee update payload
+     * @return 200 OK with the updated employee, 404 if not found, 409 on duplicate email
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<Employee> updateEmployee(@PathVariable Long id,
+                                                   @Valid @RequestBody CreateEmployeeRequest request) {
+        Employee updated = employeeService.updateEmployee(id, request);
+        return ResponseEntity.ok(updated);
     }
 
     /**

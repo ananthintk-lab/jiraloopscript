@@ -16,9 +16,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(EmployeeController.class)
@@ -163,6 +165,65 @@ class EmployeeControllerTest {
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.status").value(409))
                 .andExpect(jsonPath("$.message").value("Email already exists: jane@example.com"));
+    }
+
+    @Test
+    void updateEmployee_success_returns200WithUpdatedEmployee() throws Exception {
+        Employee updated = new Employee(1L, "Janet", "Doe", "jane@example.com");
+        when(employeeService.updateEmployee(eq(1L), any())).thenReturn(updated);
+
+        CreateEmployeeRequest request = validRequest();
+        request.setFirstName("Janet");
+
+        mockMvc.perform(put("/employees/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.firstName").value("Janet"))
+                .andExpect(jsonPath("$.lastName").value("Doe"))
+                .andExpect(jsonPath("$.email").value("jane@example.com"));
+    }
+
+    @Test
+    void updateEmployee_notFound_returns404() throws Exception {
+        when(employeeService.updateEmployee(eq(99L), any()))
+                .thenThrow(new EmployeeNotFoundException(99L));
+
+        mockMvc.perform(put("/employees/99")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validRequest())))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message").value("Employee not found with id: 99"));
+    }
+
+    @Test
+    void updateEmployee_blankFirstName_returns400() throws Exception {
+        CreateEmployeeRequest request = validRequest();
+        request.setFirstName("");
+
+        mockMvc.perform(put("/employees/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400));
+    }
+
+    @Test
+    void updateEmployee_duplicateEmailWithDifferentEmployee_returns409() throws Exception {
+        when(employeeService.updateEmployee(eq(1L), any()))
+                .thenThrow(new EmailAlreadyExistsException("other@example.com"));
+
+        CreateEmployeeRequest request = validRequest();
+        request.setEmail("other@example.com");
+
+        mockMvc.perform(put("/employees/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.message").value("Email already exists: other@example.com"));
     }
 
     private CreateEmployeeRequest validRequest() {

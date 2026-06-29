@@ -72,6 +72,59 @@ class EmployeeServiceTest {
     }
 
     @Test
+    void updateEmployee_success_updatesAndReturnsEmployee() {
+        Employee existing = new Employee(1L, "Jane", "Doe", "jane@example.com");
+        when(repository.findById(1L)).thenReturn(Optional.of(existing));
+        when(repository.existsByEmailAndIdNot("jane@example.com", 1L)).thenReturn(false);
+        when(repository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        CreateEmployeeRequest request = new CreateEmployeeRequest();
+        request.setFirstName("Janet");
+        request.setLastName("Doe");
+        request.setEmail("jane@example.com");
+
+        Employee result = service.updateEmployee(1L, request);
+
+        assertThat(result.getId()).isEqualTo(1L);
+        assertThat(result.getFirstName()).isEqualTo("Janet");
+        verify(repository).save(existing);
+    }
+
+    @Test
+    void updateEmployee_notFound_throwsEmployeeNotFoundException() {
+        when(repository.findById(99L)).thenReturn(Optional.empty());
+
+        CreateEmployeeRequest request = new CreateEmployeeRequest();
+        request.setFirstName("Jane");
+        request.setLastName("Doe");
+        request.setEmail("jane@example.com");
+
+        assertThatThrownBy(() -> service.updateEmployee(99L, request))
+                .isInstanceOf(EmployeeNotFoundException.class)
+                .hasMessageContaining("99");
+
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void updateEmployee_duplicateEmailWithDifferentEmployee_throwsEmailAlreadyExistsException() {
+        Employee existing = new Employee(1L, "Jane", "Doe", "jane@example.com");
+        when(repository.findById(1L)).thenReturn(Optional.of(existing));
+        when(repository.existsByEmailAndIdNot("other@example.com", 1L)).thenReturn(true);
+
+        CreateEmployeeRequest request = new CreateEmployeeRequest();
+        request.setFirstName("Jane");
+        request.setLastName("Doe");
+        request.setEmail("other@example.com");
+
+        assertThatThrownBy(() -> service.updateEmployee(1L, request))
+                .isInstanceOf(EmailAlreadyExistsException.class)
+                .hasMessageContaining("other@example.com");
+
+        verify(repository, never()).save(any());
+    }
+
+    @Test
     void createEmployee_success_savesAndReturnsEmployee() {
         when(repository.existsByEmail("jane@example.com")).thenReturn(false);
         when(repository.save(any())).thenAnswer(inv -> {

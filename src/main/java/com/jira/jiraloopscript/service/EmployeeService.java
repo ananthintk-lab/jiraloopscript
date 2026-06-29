@@ -39,6 +39,24 @@ public class EmployeeService {
     }
 
     /**
+     * Updates an existing employee, enforcing unique email constraint (excluding self).
+     *
+     * @throws EmployeeNotFoundException if no employee exists with the given id
+     * @throws EmailAlreadyExistsException if the email is already in use by another employee
+     */
+    public Employee updateEmployee(Long id, CreateEmployeeRequest request) {
+        Employee employee = repository.findById(id)
+                .orElseThrow(() -> new EmployeeNotFoundException(id));
+        if (repository.existsByEmailAndIdNot(request.getEmail(), id)) {
+            throw new EmailAlreadyExistsException(request.getEmail());
+        }
+        employee.setFirstName(request.getFirstName());
+        employee.setLastName(request.getLastName());
+        employee.setEmail(request.getEmail());
+        return repository.save(employee);
+    }
+
+    /**
      * Creates a new employee, enforcing unique email constraint.
      *
      * @throws EmailAlreadyExistsException if the email is already in use

@@ -76,6 +76,21 @@ after each iteration and it's included in prompts for context.
   - `mvn test` ran 24 tests (8 controller + 1 app context + 11 repo + 4 service) — all passing
 ---
 
+## 2026-06-29 - US-006
+- What was implemented: PUT /employees/{id} endpoint to update an employee's details, with 200 on success, 404 when not found, 400 on validation failure, 409 on duplicate email with another employee. Email uniqueness check excludes the current employee's own email.
+- Files changed:
+  - `src/main/java/com/jira/jiraloopscript/repository/EmployeeRepository.java` (added `existsByEmailAndIdNot(String email, Long id)`)
+  - `src/main/java/com/jira/jiraloopscript/repository/InMemoryEmployeeRepository.java` (implemented `existsByEmailAndIdNot`)
+  - `src/main/java/com/jira/jiraloopscript/service/EmployeeService.java` (added `updateEmployee(Long id, CreateEmployeeRequest request)`)
+  - `src/main/java/com/jira/jiraloopscript/controller/EmployeeController.java` (added `PUT /employees/{id}`)
+  - `src/test/java/com/jira/jiraloopscript/service/EmployeeServiceTest.java` (3 new tests: success, not found, duplicate email with different employee)
+  - `src/test/java/com/jira/jiraloopscript/controller/EmployeeControllerTest.java` (4 new tests: success 200, not found 404, blank field 400, duplicate email 409)
+- **Learnings:**
+  - For email uniqueness on update, add `existsByEmailAndIdNot(email, id)` to the repository — filters out the current employee's own record so they can keep the same email
+  - `@MockBean` service + `eq(id)` matcher from `org.mockito.ArgumentMatchers` is the right combo to stub `updateEmployee(Long, CreateEmployeeRequest)` in `@WebMvcTest`
+  - `mvn test` ran 36 tests (15 controller + 1 app context + 11 repo + 9 service) — all passing
+---
+
 ## 2026-06-29 - US-005
 - What was implemented: GET /employees/{id} endpoint returning 200 with employee JSON, 404 when not found, 400 when path variable is not a valid Long
 - Files changed:

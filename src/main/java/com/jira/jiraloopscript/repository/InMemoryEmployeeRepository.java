@@ -50,4 +50,11 @@ public class InMemoryEmployeeRepository implements EmployeeRepository {
         return store.values().stream()
                 .anyMatch(e -> e.getEmail() != null && e.getEmail().equalsIgnoreCase(email));
     }
+
+    @Override
+    public boolean existsByEmailAndIdNot(String email, Long id) {
+        return store.values().stream()
+                .anyMatch(e -> e.getEmail() != null && e.getEmail().equalsIgnoreCase(email)
+                        && !e.getId().equals(id));
+    }
 }
