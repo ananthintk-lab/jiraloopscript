@@ -132,3 +132,16 @@ after each iteration and it's included in prompts for context.
   - `org.hamcrest.Matchers.containsString(...)` works directly in `jsonPath(...).value(...)` assertions for partial string matching
   - `mvn clean install` ran 40 tests (17 controller + 1 app context + 11 repo + 11 service) — all passing
 ---
+
+## 2026-06-29 - US-009
+- What was implemented: OpenAPI/Swagger documentation — created `OpenApiConfig` bean with API info (title, version, description) and annotated all 5 controller endpoints with `@Operation(summary=...)` and `@ApiResponses`/`@ApiResponse` annotations
+- Files changed:
+  - `src/main/java/com/jira/jiraloopscript/config/OpenApiConfig.java` (new — `@Bean OpenAPI` with title 'Employee Management API', version '1.0.0', description)
+  - `src/main/java/com/jira/jiraloopscript/controller/EmployeeController.java` (added `@Tag`, `@Operation`, `@ApiResponses`/`@ApiResponse` with `@Content`/`@Schema` to all 5 endpoints)
+- **Learnings:**
+  - springdoc-openapi dependency was already in pom.xml — no pom changes needed; Swagger UI at `/swagger-ui.html` and spec at `/v3/api-docs` work out of the box
+  - Create a `@Configuration` class with a `@Bean OpenAPI` method to set title/version/description; this is cleaner than application.properties properties
+  - For list responses, use `@Content(array = @ArraySchema(schema = @Schema(implementation = Foo.class)))` — plain `@Schema(implementation = Foo.class)` only works for single-object responses
+  - Jakarta validation constraints (`@NotBlank`, `@Email`) on request DTOs are automatically reflected in Swagger UI schemas — no extra annotation needed
+  - `mvn clean install` ran 40 tests — all passing (no new tests needed for pure documentation story)
+---
