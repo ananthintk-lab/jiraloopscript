@@ -3,10 +3,10 @@
   "sessionId": "3d1c095c-80b1-497c-b1ab-14c9341f5f00",
   "status": "running",
   "startedAt": "2026-06-29T06:28:01.997Z",
-  "updatedAt": "2026-06-29T06:31:07.418Z",
-  "currentIteration": 0,
+  "updatedAt": "2026-06-29T06:33:12.254Z",
+  "currentIteration": 1,
   "maxIterations": 10,
-  "tasksCompleted": 0,
+  "tasksCompleted": 1,
   "isPaused": false,
   "agentPlugin": "claude",
   "trackerState": {
@@ -18,8 +18,8 @@
       {
         "id": "US-001",
         "title": "Project Setup",
-        "status": "open",
-        "completedInSession": false
+        "status": "completed",
+        "completedInSession": true
       },
       {
         "id": "US-002",
@@ -71,7 +71,18 @@
       }
     ]
   },
-  "iterations": [],
+  "iterations": [
+    {
+      "iteration": 1,
+      "status": "completed",
+      "taskId": "US-001",
+      "taskTitle": "Project Setup",
+      "taskCompleted": true,
+      "durationMs": 169653,
+      "startedAt": "2026-06-29T06:28:17.759Z",
+      "endedAt": "2026-06-29T06:31:07.412Z"
+    }
+  ],
   "skippedTaskIds": [],
   "cwd": "C:\\users\\ananthkn.NOUSINFO\\jiraloopscript",
   "activeTaskIds": [],
