@@ -33,7 +33,7 @@ public class EmployeeService {
      *
      * @throws EmployeeNotFoundException if no employee exists with the given id
      */
-    public Employee getEmployeeById(Long id) {
+    public Employee getEmployeeById(String id) {
         return repository.findById(id)
                 .orElseThrow(() -> new EmployeeNotFoundException(id));
     }
