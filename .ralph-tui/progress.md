@@ -9,9 +9,13 @@ after each iteration and it's included in prompts for context.
 - springdoc-openapi version 2.7.0 is compatible with Spring Boot 3.x (`springdoc-openapi-starter-webmvc-ui`)
 - In-memory storage means Java collections (Map/List), not H2/JPA — no `spring-boot-starter-data-jpa` needed
 - `spring-boot-starter-data-jpa-test` is not a real Maven artifact — use `spring-boot-starter-test` for tests
-- Base package is `com.jira.jiraloopscript`; sub-packages: `model`, `repository`, `exception`, `service`, `controller`
+- Base package is `com.jira.jiraloopscript`; sub-packages: `model`, `repository`, `exception`, `service`, `controller`, `dto`
 - InMemoryEmployeeRepository uses `ConcurrentHashMap<Long, Employee>` + `AtomicLong` for thread-safe ID generation
 - Repository tests are plain unit tests (no Spring context) — instantiate directly in `@BeforeEach`
+- DTOs (request/response bodies) go in `dto` package; `CreateEmployeeRequest` uses Jakarta validation annotations
+- `GlobalExceptionHandler` (`@RestControllerAdvice`) in `exception` package handles `MethodArgumentNotValidException` (400) and `EmailAlreadyExistsException` (409)
+- Controller tests use `@WebMvcTest` + `@MockBean` for the service — loads only the web slice, no full Spring context needed
+- Service tests use plain Mockito (`mock()`) — no Spring context, instantiate `EmployeeService` with mocked repo in `@BeforeEach`
 
 ---
 
@@ -38,4 +42,22 @@ after each iteration and it's included in prompts for context.
   - Repository unit tests don't need Spring context; instantiate `InMemoryEmployeeRepository` directly in `@BeforeEach` for fast, isolated tests
   - `existsByEmail` uses `equalsIgnoreCase` for case-insensitive email matching — important for duplicate detection in later stories
   - `mvn clean install` ran 12 tests (1 context + 11 repo) all passing
+---
+
+## 2026-06-29 - US-003
+- What was implemented: POST /employees endpoint with validation, duplicate-email detection (409 Conflict), and standardised error responses (400 Bad Request)
+- Files changed:
+  - `src/main/java/com/jira/jiraloopscript/dto/CreateEmployeeRequest.java` (new — request DTO with @NotBlank/@Email)
+  - `src/main/java/com/jira/jiraloopscript/dto/ErrorResponse.java` (new — standard error response body)
+  - `src/main/java/com/jira/jiraloopscript/exception/EmailAlreadyExistsException.java` (new)
+  - `src/main/java/com/jira/jiraloopscript/exception/GlobalExceptionHandler.java` (new — @RestControllerAdvice)
+  - `src/main/java/com/jira/jiraloopscript/service/EmployeeService.java` (new)
+  - `src/main/java/com/jira/jiraloopscript/controller/EmployeeController.java` (new)
+  - `src/test/java/com/jira/jiraloopscript/controller/EmployeeControllerTest.java` (new — 5 @WebMvcTest tests)
+  - `src/test/java/com/jira/jiraloopscript/service/EmployeeServiceTest.java` (new — 2 plain unit tests)
+- **Learnings:**
+  - `@WebMvcTest(EmployeeController.class)` loads only the web slice and auto-picks up `@RestControllerAdvice` — no extra config needed
+  - `@MockBean EmployeeService` is the right way to provide the service dep in a web-slice test
+  - Service tests need no Spring context; use `mock(EmployeeRepository.class)` and construct `new EmployeeService(repo)` directly
+  - `mvn test` ran 19 tests (5 controller + 1 app context + 11 repo + 2 service) — all passing
 ---
