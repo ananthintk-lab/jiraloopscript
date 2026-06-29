@@ -6,6 +6,8 @@ import com.jira.jiraloopscript.model.Employee;
 import com.jira.jiraloopscript.repository.EmployeeRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * Business logic for employee management operations.
  */
@@ -16,6 +18,13 @@ public class EmployeeService {
 
     public EmployeeService(EmployeeRepository repository) {
         this.repository = repository;
+    }
+
+    /**
+     * Returns all employees ordered by id ascending.
+     */
+    public List<Employee> getAllEmployees() {
+        return repository.findAll();
     }
 
     /**

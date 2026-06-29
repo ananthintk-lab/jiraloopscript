@@ -12,8 +12,11 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -28,6 +31,41 @@ class EmployeeControllerTest {
 
     @MockBean
     EmployeeService employeeService;
+
+    @Test
+    void getAllEmployees_emptyStore_returns200WithEmptyArray() throws Exception {
+        when(employeeService.getAllEmployees()).thenReturn(List.of());
+
+        mockMvc.perform(get("/employees"))
+                .andExpect(status().isOk())
+                .andExpect(content().json("[]"));
+    }
+
+    @Test
+    void getAllEmployees_singleEmployee_returns200WithArray() throws Exception {
+        when(employeeService.getAllEmployees())
+                .thenReturn(List.of(new Employee(1L, "Jane", "Doe", "jane@example.com")));
+
+        mockMvc.perform(get("/employees"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].firstName").value("Jane"));
+    }
+
+    @Test
+    void getAllEmployees_multipleEmployees_returns200OrderedById() throws Exception {
+        when(employeeService.getAllEmployees()).thenReturn(List.of(
+                new Employee(1L, "Alice", "Smith", "alice@example.com"),
+                new Employee(2L, "Bob", "Jones", "bob@example.com")
+        ));
+
+        mockMvc.perform(get("/employees"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[1].id").value(2));
+    }
 
     @Test
     void createEmployee_success_returns201WithEmployee() throws Exception {

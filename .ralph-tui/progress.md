@@ -61,3 +61,17 @@ after each iteration and it's included in prompts for context.
   - Service tests need no Spring context; use `mock(EmployeeRepository.class)` and construct `new EmployeeService(repo)` directly
   - `mvn test` ran 19 tests (5 controller + 1 app context + 11 repo + 2 service) — all passing
 ---
+
+## 2026-06-29 - US-004
+- What was implemented: GET /employees endpoint returning all employees ordered by id ascending, with an empty array when no records exist
+- Files changed:
+  - `src/main/java/com/jira/jiraloopscript/repository/InMemoryEmployeeRepository.java` (findAll() now sorts by id ascending using stream + Comparator)
+  - `src/main/java/com/jira/jiraloopscript/service/EmployeeService.java` (added getAllEmployees() method)
+  - `src/main/java/com/jira/jiraloopscript/controller/EmployeeController.java` (added GET /employees → 200 OK with List<Employee>)
+  - `src/test/java/com/jira/jiraloopscript/controller/EmployeeControllerTest.java` (3 new tests: empty store, single, multiple)
+  - `src/test/java/com/jira/jiraloopscript/service/EmployeeServiceTest.java` (2 new tests: empty and multiple)
+- **Learnings:**
+  - `ConcurrentHashMap.values()` has no iteration-order guarantee — must sort after collecting if ordered output is required
+  - `List.of()` (Java 9+) is available and convenient for test fixtures in immutable-list scenarios
+  - `mvn test` ran 24 tests (8 controller + 1 app context + 11 repo + 4 service) — all passing
+---

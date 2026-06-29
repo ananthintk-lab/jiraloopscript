@@ -7,6 +7,8 @@ import com.jira.jiraloopscript.repository.EmployeeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -21,6 +23,30 @@ class EmployeeServiceTest {
     void setUp() {
         repository = mock(EmployeeRepository.class);
         service = new EmployeeService(repository);
+    }
+
+    @Test
+    void getAllEmployees_emptyStore_returnsEmptyList() {
+        when(repository.findAll()).thenReturn(List.of());
+
+        List<Employee> result = service.getAllEmployees();
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getAllEmployees_multipleEmployees_returnsDelegatedList() {
+        List<Employee> employees = List.of(
+                new Employee(1L, "Alice", "Smith", "alice@example.com"),
+                new Employee(2L, "Bob", "Jones", "bob@example.com")
+        );
+        when(repository.findAll()).thenReturn(employees);
+
+        List<Employee> result = service.getAllEmployees();
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getId()).isEqualTo(1L);
+        assertThat(result.get(1).getId()).isEqualTo(2L);
     }
 
     @Test

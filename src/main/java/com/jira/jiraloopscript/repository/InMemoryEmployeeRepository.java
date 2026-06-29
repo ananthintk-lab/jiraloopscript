@@ -3,11 +3,12 @@ package com.jira.jiraloopscript.repository;
 import com.jira.jiraloopscript.model.Employee;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 /**
  * Thread-safe in-memory implementation of {@link EmployeeRepository}.
@@ -34,7 +35,9 @@ public class InMemoryEmployeeRepository implements EmployeeRepository {
 
     @Override
     public List<Employee> findAll() {
-        return new ArrayList<>(store.values());
+        return store.values().stream()
+                .sorted(Comparator.comparing(Employee::getId))
+                .collect(Collectors.toList());
     }
 
     @Override
