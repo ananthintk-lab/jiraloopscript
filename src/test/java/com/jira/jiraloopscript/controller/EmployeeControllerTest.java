@@ -3,6 +3,7 @@ package com.jira.jiraloopscript.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jira.jiraloopscript.dto.CreateEmployeeRequest;
 import com.jira.jiraloopscript.exception.EmailAlreadyExistsException;
+import com.jira.jiraloopscript.exception.EmployeeNotFoundException;
 import com.jira.jiraloopscript.model.Employee;
 import com.jira.jiraloopscript.service.EmployeeService;
 import org.junit.jupiter.api.Test;
@@ -65,6 +66,37 @@ class EmployeeControllerTest {
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].id").value(1))
                 .andExpect(jsonPath("$[1].id").value(2));
+    }
+
+    @Test
+    void getEmployeeById_found_returns200WithEmployee() throws Exception {
+        Employee employee = new Employee(1L, "Jane", "Doe", "jane@example.com");
+        when(employeeService.getEmployeeById(1L)).thenReturn(employee);
+
+        mockMvc.perform(get("/employees/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.firstName").value("Jane"))
+                .andExpect(jsonPath("$.lastName").value("Doe"))
+                .andExpect(jsonPath("$.email").value("jane@example.com"));
+    }
+
+    @Test
+    void getEmployeeById_notFound_returns404() throws Exception {
+        when(employeeService.getEmployeeById(99L))
+                .thenThrow(new EmployeeNotFoundException(99L));
+
+        mockMvc.perform(get("/employees/99"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message").value("Employee not found with id: 99"));
+    }
+
+    @Test
+    void getEmployeeById_invalidIdType_returns400() throws Exception {
+        mockMvc.perform(get("/employees/abc"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400));
     }
 
     @Test

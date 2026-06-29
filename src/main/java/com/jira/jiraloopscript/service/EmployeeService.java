@@ -2,6 +2,7 @@ package com.jira.jiraloopscript.service;
 
 import com.jira.jiraloopscript.dto.CreateEmployeeRequest;
 import com.jira.jiraloopscript.exception.EmailAlreadyExistsException;
+import com.jira.jiraloopscript.exception.EmployeeNotFoundException;
 import com.jira.jiraloopscript.model.Employee;
 import com.jira.jiraloopscript.repository.EmployeeRepository;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,16 @@ public class EmployeeService {
      */
     public List<Employee> getAllEmployees() {
         return repository.findAll();
+    }
+
+    /**
+     * Returns a single employee by id.
+     *
+     * @throws EmployeeNotFoundException if no employee exists with the given id
+     */
+    public Employee getEmployeeById(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new EmployeeNotFoundException(id));
     }
 
     /**

@@ -2,12 +2,14 @@ package com.jira.jiraloopscript.service;
 
 import com.jira.jiraloopscript.dto.CreateEmployeeRequest;
 import com.jira.jiraloopscript.exception.EmailAlreadyExistsException;
+import com.jira.jiraloopscript.exception.EmployeeNotFoundException;
 import com.jira.jiraloopscript.model.Employee;
 import com.jira.jiraloopscript.repository.EmployeeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -47,6 +49,26 @@ class EmployeeServiceTest {
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getId()).isEqualTo(1L);
         assertThat(result.get(1).getId()).isEqualTo(2L);
+    }
+
+    @Test
+    void getEmployeeById_found_returnsEmployee() {
+        Employee employee = new Employee(1L, "Jane", "Doe", "jane@example.com");
+        when(repository.findById(1L)).thenReturn(Optional.of(employee));
+
+        Employee result = service.getEmployeeById(1L);
+
+        assertThat(result.getId()).isEqualTo(1L);
+        assertThat(result.getFirstName()).isEqualTo("Jane");
+    }
+
+    @Test
+    void getEmployeeById_notFound_throwsEmployeeNotFoundException() {
+        when(repository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.getEmployeeById(99L))
+                .isInstanceOf(EmployeeNotFoundException.class)
+                .hasMessageContaining("99");
     }
 
     @Test

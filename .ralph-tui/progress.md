@@ -75,3 +75,17 @@ after each iteration and it's included in prompts for context.
   - `List.of()` (Java 9+) is available and convenient for test fixtures in immutable-list scenarios
   - `mvn test` ran 24 tests (8 controller + 1 app context + 11 repo + 4 service) — all passing
 ---
+
+## 2026-06-29 - US-005
+- What was implemented: GET /employees/{id} endpoint returning 200 with employee JSON, 404 when not found, 400 when path variable is not a valid Long
+- Files changed:
+  - `src/main/java/com/jira/jiraloopscript/exception/GlobalExceptionHandler.java` (added handlers for `EmployeeNotFoundException` → 404 and `MethodArgumentTypeMismatchException` → 400)
+  - `src/main/java/com/jira/jiraloopscript/service/EmployeeService.java` (added `getEmployeeById(Long id)`)
+  - `src/main/java/com/jira/jiraloopscript/controller/EmployeeController.java` (added `GET /employees/{id}`)
+  - `src/test/java/com/jira/jiraloopscript/controller/EmployeeControllerTest.java` (3 new tests: found 200, not found 404, invalid id 400)
+  - `src/test/java/com/jira/jiraloopscript/service/EmployeeServiceTest.java` (2 new tests: found, not found)
+- **Learnings:**
+  - `MethodArgumentTypeMismatchException` (from `org.springframework.web.method.annotation`) is thrown when a path variable can't be converted to the declared type — must be handled explicitly in `@RestControllerAdvice` to return our standard `ErrorResponse` format (400)
+  - `EmployeeNotFoundException` was already defined in US-002; just needed to add an `@ExceptionHandler` in `GlobalExceptionHandler` and use it in the service
+  - `mvn test` ran 29 tests (11 controller + 1 app context + 11 repo + 6 service) — all passing
+---
